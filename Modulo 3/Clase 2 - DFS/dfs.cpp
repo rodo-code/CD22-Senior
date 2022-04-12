@@ -11,7 +11,7 @@ vector<bool> visitado; // 0 NO VISITADO - 1 VISITADO
 
 void DFS(int nodo){
     visitado[nodo] = 1; // Marcamos como visitado el nodo
-    for(auto vecino: G[nodo]){ // Recorremos la lista de visitados
+    for(auto vecino: G[nodo]){ // Recorremos la lista de vecinos
         if(!visitado[vecino]){ // Si no esta visitado el vecino
             DFS(vecino); // Lo visito
         }
@@ -31,7 +31,7 @@ int main(){
         G[a].push_back(b);
         G[b].push_back(a); // Si es no dirigido
     }
-    DFS(6); // Marcar todos los nodos a los que puede llegar desde el 2
+    DFS(2); // Marcar todos los nodos a los que puede llegar desde el 2
     for(int i=0;i<nodos;i++){
         if(visitado[i]) cout<<"Puedo llegar al nodo "<<i<<"\n";
         else cout<<"NO puedo llegar al nodo "<<i<<"\n";
