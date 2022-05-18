@@ -7,25 +7,6 @@ typedef pair<int,int> ii;
 typedef vector<ii> vii;
 
 vi p,r;
-vi factor(10000010);
-
-
-void criba_modificada(){
-    factor[0]=1;
-    factor[1]=1;
-    for(int i=2;i<factor.size();i++) factor[i]=i;
-    // CRIBA
-    int tam = factor.size();
-    for(int i=2;i*i<=tam;i++){
-        if(factor[i]==i){ // Es primo
-            for(int j=i*i;j<tam;j+=i){
-                if(factor[j]==j){ // No ha sido marcado
-                    factor[j]=i;
-                }
-            }
-        }
-    }
-}
 
 void init(int N){
     p.clear();
@@ -60,23 +41,23 @@ void unir(int a,int b){
 int main(){
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
-    criba_modificada();
     vi numeros;
-    bool hay_uno = 0;
     int N,x;
     cin>>N;
     init(10000010);
     while(N--){
         cin>>x;
         numeros.push_back(x);
-        if(x==1) hay_uno = 1;
-        else{
-            // Hacemos las conexiones
-            int cx = x;
-            while(cx>1){
-                unir(x,factor[cx]);
-                cx = cx / factor[cx];
+    }
+    for(int i=0;i<numeros.size();i++){
+        for(int j=i+1;j<numeros.size();j++){
+            // MCD(numeros[i],numeros[j])>1
+            if(__gcd(numeros[i],numeros[j])>1){
+                //cout<<"Uni "<<numeros[i]<<" con "<<numeros[j]<<"\n";
+                unir(numeros[i],numeros[j]);
             }
+            if(numeros[i]==1 or numeros[j]==1)
+                unir(numeros[i],numeros[j]);
         }
     }
     int Q;
@@ -84,8 +65,7 @@ int main(){
     while(Q--){
         int a,b;
         cin>>a>>b;
-        if(hay_uno) cout<<"SI"<<"\n";
-        else if(buscar(numeros[a])==buscar(numeros[b])) cout<<"SI"<<"\n";
+        if(buscar(numeros[a])==buscar(numeros[b])) cout<<"SI"<<"\n";
         else cout<<"NO"<<"\n";
     }
     return 0;
