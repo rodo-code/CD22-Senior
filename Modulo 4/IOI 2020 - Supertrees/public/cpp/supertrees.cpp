@@ -1,84 +1,87 @@
 #include "supertrees.h"
-#include <vector>
-#include <iostream>
-#include <unordered_map>
+#include <bits/stdc++.h>
 using namespace std;
- 
-vector<int> rep,rnk;
- 
-void init(int N){
-	rep.assign(N,0);
-	for(int i=0;i<N;i++){
-		rep[i]=i;
-	}
-	rnk.assign(N,1);
+
+vector<int> padre,rnk,tam;
+
+void init(int n){
+    padre.assign(n,0);
+    rnk.assign(n,1);
+    tam.assign(n,1);
+    for(int i=0;i<n;i++){
+        padre[i]=i; // Es su propio padre
+    }
 }
- 
-int buscar(int a){
-	if(rep[a]==a) return a;
-	return rep[a]=buscar(rep[a]);
+
+int buscar(int x){
+    if(padre[x]==x) return x;
+    else return padre[x]=buscar(padre[x]);
 }
- 
+
 bool mismo_conjunto(int a,int b){
-	return buscar(a)==buscar(b);
+    return buscar(a)==buscar(b);
 }
- 
+
 void unir(int a,int b){
-	int ra=buscar(a);
-	int rb=buscar(b);
-	if(ra != rb){
-		if(rnk[ra]>rnk[rb]){
-			rep[rb]=ra;
-		}
-		else{
-			rep[ra]=rb;
-		}
-	}
+    if(!mismo_conjunto(a,b)){
+        a = buscar(a);
+        b = buscar(b);
+        if(rnk[a]>=rnk[b]){
+            // B se una a A
+            padre[b] = a;
+            tam[a]+=tam[b];
+            if(rnk[a]==rnk[b]) rnk[a]++;
+        }
+        else{
+            // A se une a B
+            padre[a] = b;
+            tam[b] += tam[a];
+        }
+    }
 }
- 
+
 int construct(vector<vector<int> > p) {
 	int n = p.size();
-	vector<vector<int> > answer;
-	answer.assign(n,vector<int>(n));
-	// Creamos el Union Find
-	init(n);
-	// Recorremos p
-	for(int i=0;i<n;i++){
-		for(int j=0;j<n;j++){
-			if(p[i][j]==1){
-				unir(i,j);
-			}
-		}
-	}
-	// Verificar si p es correcto, si existe un grafo que lo satisfaga
-	for(int i=0;i<n;i++){
-		for(int j=0;j<n;j++){
-			if(mismo_conjunto(i,j) and p[i][j]==0){
-				return 0;
-			}
-		}
-	}
-	// Si p es valido
-	unordered_map<int,vector<int> >conjuntos;
-	for(int i=0;i<rep.size();i++){
-		int ri = buscar(i);
-		if(conjuntos.find(ri)!=conjuntos.end()){
-			conjuntos[ri].push_back(i);
-		}
-		else{
-			conjuntos[ri] = vector<int>();
-			conjuntos[ri].push_back(i);
-		}
-	}
-	for(auto elem: conjuntos){
-		vector<int> cont = elem.second;
-		for(int i=0;i<cont.size()-1;i++){
-			int na = cont[i];
-			int nb = cont[i+1];
-			answer[na][nb]=1;
-			answer[nb][na]=1;
-		}
-	}
-	build(answer);
+    // Armamos el Union Find
+    init(n);
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++){
+            if(p[i][j]==2){
+                unir(i,j);
+            }
+        }
+    }
+    // Prueba de Completitud
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++){
+            if(p[i][j]==0 and mismo_conjunto(i,j)){
+                return 0;
+            }
+        }
+    }
+    // Intetamos generar el grafo
+    vector<vector<int> > answer(n,vector<int>(n)); // Creamos la matriz de adyacencia
+    unordered_map<int,vector<int> >conjuntos;
+    for(int i=0;i<n;i++){
+        int rep = buscar(i);
+        if(tam[rep]==2) return 0; // No puede haber un ciclo de 2 elementos
+        if(conjuntos.find(rep) == conjuntos.end()){
+            // No existe aun esa llave
+            conjuntos[rep] = vector<int>();            
+        }
+        conjuntos[rep].push_back(i);
+    }
+    // Construimos la matriz de adyacencia
+    for(auto elem: conjuntos){
+        vector<int> lista = elem.second;
+        if(lista.size() == 1) continue;
+        for(int i=0;i<lista.size();i++){
+            int a = lista[i];
+            int b = lista[(i+1)%lista.size()];
+            answer[a][b] = 1;
+            answer[b][a] = 1;
+        }
+    }
+    build(answer);
 	return 1;
 }
